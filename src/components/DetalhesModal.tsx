@@ -172,7 +172,7 @@ export default function DetalhesModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#eef4ff",
     paddingTop: 40,
   },
   header: {
@@ -184,15 +184,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#dce5ff",
+    shadowColor: "#2a4f99",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 4,
   },
   titulo: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#337acc",
+    color: "#153e7d",
   },
   content: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
   },
   emptyContainer: {
@@ -202,15 +207,20 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: "#999",
+    color: "#8a97b8",
   },
   itemCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: "#dce5ff",
+    shadowColor: "#2a4f99",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   itemHeader: {
     flexDirection: "row",
@@ -218,7 +228,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#eef1fa",
   },
   itemIcon: {
     fontSize: 32,
@@ -230,23 +240,23 @@ const styles = StyleSheet.create({
   itemNome: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#337acc",
+    color: "#153e7d",
   },
   itemPreco: {
     fontSize: 12,
-    color: "#666",
+    color: "#66758a",
     marginTop: 4,
   },
   btnExcluir: {
     padding: 8,
   },
   itemBody: {
-    gap: 12,
+    rowGap: 12,
   },
   observacoesPedidoSection: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     marginHorizontal: 4,
     marginBottom: 12,
     borderWidth: 1,
@@ -269,9 +279,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
-    color: "#666",
+    color: "#6c7c99",
   },
   quantidadeControl: {
     flexDirection: "row",
@@ -289,10 +299,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     backgroundColor: "#f0f5ff",
-    borderRadius: 8,
+    borderRadius: 12,
   },
   subtotal: {
     fontSize: 14,
@@ -300,20 +310,20 @@ const styles = StyleSheet.create({
     color: "#337acc",
   },
   observacoesSection: {
-    gap: 4,
+    gap: 6,
   },
   observacoes: {
-    fontSize: 12,
-    color: "#666",
+    fontSize: 13,
+    color: "#66758a",
     fontStyle: "italic",
-    padding: 8,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 6,
+    padding: 10,
+    backgroundColor: "#f7f9ff",
+    borderRadius: 10,
   },
   footer: {
     backgroundColor: "#ffffff",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderTopWidth: 1,
     borderTopColor: "#dce5ff",
   },
@@ -330,6 +340,6 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 20,
     fontWeight: "900",
-    color: "#337acc",
+    color: "#153e7d",
   },
 });

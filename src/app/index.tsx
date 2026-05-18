@@ -17,27 +17,31 @@ export default function IndexPage() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#e9f0ff" }}
       behavior={Platform.select({ ios: "padding", android: "height" })}
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.container}>
-          <Image
-            source={require("@/assets/logo.jpeg")}
-            style={styles.Illustration}
-          />
-          <Text style={styles.title}>
-            Bem-vindo ao <Text style={styles.marca}>Garçom GO</Text>, o app que
-            agiliza o atendimento, conecta garçons e cozinha em tempo real.
-          </Text>
-          <View style={styles.form}>
-            <Input placeholder="Matricula" />
-            <Input placeholder="senha" />
-            <Button label="Entrar" onPress={() => router.push("/mesas")} />
+          <View style={styles.card}>
+            <Image
+              source={require("@/assets/logo.jpeg")}
+              style={styles.Illustration}
+            />
+            <Text style={styles.title}>
+              Bem-vindo ao <Text style={styles.marca}>Garçom GO</Text>
+            </Text>
+            <Text style={styles.subtitle}>
+              Agilize o atendimento e visualize pedidos em tempo real.
+            </Text>
+            <View style={styles.form}>
+              <Input placeholder="Matrícula" />
+              <Input placeholder="Senha" secureTextEntry />
+              <Button label="Entrar" onPress={() => router.push("/mesas")} />
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -46,34 +50,51 @@ export default function IndexPage() {
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.87)",
-    padding: 20,
+    padding: 24,
+    justifyContent: "center",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    shadowColor: "#2a4f99",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 6,
   },
   Illustration: {
-    width: 400,
-    height: 400,
+    width: 240,
+    height: 240,
     alignSelf: "center",
-    marginTop: 100,
-    marginBottom: 10,
+    marginBottom: 18,
+    borderRadius: 20,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 900,
-    color: "rgba(116, 139, 148, 0.87)",
-    marginBottom: 100,
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#153e7d",
+    textAlign: "center",
+    marginBottom: 12,
   },
   marca: {
     color: "rgb(51, 122, 204)",
   },
-  fundo: {
-    flex: 1,
-    width: 100,
-    height: 800,
+  subtitle: {
+    fontSize: 15,
+    color: "#5d728f",
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 22,
   },
   form: {
-    gap: 20,
-    marginTop: 90,
+    width: "100%",
+    gap: 16,
   },
 });

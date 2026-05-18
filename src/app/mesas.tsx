@@ -4,7 +4,7 @@ import Notificacao from "@/components/Notificacao";
 import PedidosModal from "@/components/PedidosModal";
 import { Pedido } from "@/data/cardapio";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function MesasPage() {
   const mesas = ["01", "02", "03", "04", "05", "06"];
@@ -78,7 +78,16 @@ export default function MesasPage() {
   return (
     <View style={styles.container}>
       <Notificacao />
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.pageTitle}>Mesas</Text>
+        <Text style={styles.pageSubtitle}>
+          Selecione uma mesa para gerenciar pedidos ou verificar detalhes.
+        </Text>
+      </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.gridContainer}>
           {mesas.map((mesa) => (
             <CardMesa
@@ -119,11 +128,27 @@ export default function MesasPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#dce5ff",
+    backgroundColor: "#e6eefc",
     paddingTop: 16,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  pageTitle: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: "#153e7d",
+    marginBottom: 6,
+  },
+  pageSubtitle: {
+    fontSize: 14,
+    color: "#5d728f",
+    lineHeight: 20,
   },
   content: {
     paddingHorizontal: 12,
+    paddingBottom: 24,
   },
   gridContainer: {
     flexDirection: "row",

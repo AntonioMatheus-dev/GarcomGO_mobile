@@ -21,38 +21,44 @@ export default function CardMesa({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.mesaId}>Mesa {mesaId}</Text>
-
-      <View
-        style={[
-          styles.statusCircle,
-          statusFinalizado ? styles.statusGreen : styles.statusRed,
-        ]}
-      >
-        {statusFinalizado && (
-          <Ionicons name="checkmark" size={24} color="#ffffff" />
-        )}
-      </View>
-
-      {temPedido && (
-        <Text style={styles.infoText}>Itens: {pedido.itens.length}</Text>
-      )}
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
+      <View style={styles.cardHeader}>
+        <Text style={styles.mesaId}>Mesa {mesaId}</Text>
+        <View
           style={[
-            styles.button,
-            statusFinalizado ? styles.btnDetalhes : styles.btnAdicionar,
+            styles.statusBadge,
+            statusFinalizado ? styles.statusGreen : styles.statusRed,
           ]}
-          onPress={() =>
-            statusFinalizado ? onVerDetalhes(mesaId) : onAdicionarPedido(mesaId)
-          }
         >
-          <Text style={styles.buttonText}>
-            {statusFinalizado ? "Detalhes" : "Adicionar"}
+          <Text style={styles.statusText}>
+            {statusFinalizado ? "Finalizado" : "Aberto"}
           </Text>
-        </TouchableOpacity>
+        </View>
       </View>
+
+      <View style={styles.cardInfo}>
+        <Ionicons
+          name={statusFinalizado ? "checkmark-circle" : "time"}
+          size={36}
+          color={statusFinalizado ? "#44bb66" : "#ff6b6b"}
+        />
+        <Text style={styles.infoText}>
+          {temPedido ? `${pedido.itens.length} itens` : "Nenhum pedido"}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={[
+          styles.button,
+          statusFinalizado ? styles.btnDetalhes : styles.btnAdicionar,
+        ]}
+        onPress={() =>
+          statusFinalizado ? onVerDetalhes(mesaId) : onAdicionarPedido(mesaId)
+        }
+      >
+        <Text style={styles.buttonText}>
+          {statusFinalizado ? "Ver Detalhes" : "Adicionar Pedido"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -72,11 +78,33 @@ const styles = StyleSheet.create({
     minHeight: 200,
   },
   mesaId: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#337acc",
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#153e7d",
+  },
+  cardHeader: {
     width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(51, 122, 204, 0.2)",
+  },
+  statusText: {
+    fontSize: 12,
+    color: "#153e7d",
+    fontWeight: "700",
+  },
+  cardInfo: {
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 18,
   },
   statusCircle: {
     width: 50,
@@ -84,30 +112,25 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
   },
   statusRed: {
-    borderColor: "#ff4444",
-    backgroundColor: "transparent",
+    backgroundColor: "#ffe6ea",
+    borderColor: "#ff8a96",
   },
   statusGreen: {
-    backgroundColor: "#44ff44",
-    borderColor: "#44ff44",
+    backgroundColor: "#e8f9ea",
+    borderColor: "#74d186",
   },
   infoText: {
-    fontSize: 12,
-    color: "#337acc",
+    fontSize: 14,
+    color: "#4a6fae",
     fontWeight: "600",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 8,
-    width: "100%",
+    textAlign: "center",
   },
   button: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -115,11 +138,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#337acc",
   },
   btnDetalhes: {
-    backgroundColor: "#44ff44",
+    backgroundColor: "#44bb66",
   },
   buttonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "700",
-    color: "#000000",
+    color: "#ffffff",
   },
 });
