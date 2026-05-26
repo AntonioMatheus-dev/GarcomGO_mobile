@@ -1,5 +1,7 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -8,48 +10,84 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Button from "@/components/Button";
 import Input from "@/components/input";
+import { useAuth } from "@/context/AuthContext";
 
 export default function IndexPage() {
   const router = useRouter();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      await login(email.trim(), password);
+      router.push("/mesas");
+    } catch (error) {
+      Alert.alert(
+        "Falha no login",
+        error instanceof Error ? error.message : "Não foi possível acessar.",
+      );
+    }
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#e9f0ff" }}
-      behavior={Platform.select({ ios: "padding", android: "height" })}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.select({ ios: "padding", android: "height" })}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
       >
-        <View style={styles.container}>
-          <View style={styles.card}>
-            <Image
-              source={require("@/assets/logo.jpeg")}
-              style={styles.Illustration}
-            />
-            <Text style={styles.title}>
-              Bem-vindo ao <Text style={styles.marca}>Garçom GO</Text>
-            </Text>
-            <Text style={styles.subtitle}>
-              Agilize o atendimento e visualize pedidos em tempo real.
-            </Text>
-            <View style={styles.form}>
-              <Input placeholder="Matrícula" />
-              <Input placeholder="Senha" secureTextEntry />
-              <Button label="Entrar" onPress={() => router.push("/mesas")} />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.container}>
+            <View style={styles.card}>
+              <Image
+                source={require("@/assets/logo.jpeg")}
+                style={styles.Illustration}
+              />
+              <Text style={styles.title}>
+                Bem-vindo ao <Text style={styles.marca}>Garçom GO</Text>
+              </Text>
+              <Text style={styles.subtitle}>
+                Agilize o atendimento e visualize pedidos em tempo real.
+              </Text>
+              <View style={styles.form}>
+                <Input
+                  placeholder="Matrícula"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+                <Input
+                  placeholder="Senha"
+                  secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <Button label="Entrar" onPress={handleLogin} />
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#e9f0ff",
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
   },

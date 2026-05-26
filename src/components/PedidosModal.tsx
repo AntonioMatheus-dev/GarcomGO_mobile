@@ -1,8 +1,13 @@
-import { CARDAPIO, ItemPedido, Pedido } from "@/data/cardapio";
+import { useAuth } from "@/context/AuthContext";
+import { ItemCardapio, ItemPedido, Pedido } from "@/data/cardapio";
+import { listarItensPorRestaurante } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,15 +31,69 @@ export default function PedidosModal({
   onClose,
   onSavePedido,
 }: PedidosModalProps) {
+  const { token, restauranteId } = useAuth();
   const [itens, setItens] = useState<ItemPedido[]>([]);
   const [observacoes, setObservacoes] = useState("");
+  const [cardapio, setCardapio] = useState<ItemCardapio[]>([]);
+  const [carregandoCardapio, setCarregandoCardapio] = useState(false);
 
   useEffect(() => {
     setItens(pedido?.itens ? [...pedido.itens] : []);
     setObservacoes(pedido?.observacoes || "");
   }, [pedido, visible]);
 
-  const adicionarItem = (cardapioItem: (typeof CARDAPIO)[0]) => {
+  useEffect(() => {
+    if (!visible || !restauranteId || !token) {
+      setCardapio([]);
+      return;
+    }
+
+    const carregarCardapio = async () => {
+      setCarregandoCardapio(true);
+      try {
+        const itensDoBack = await listarItensPorRestaurante(
+          restauranteId,
+          token,
+        );
+        setCardapio(
+          itensDoBack.map((item) => ({
+            id: item.id,
+            nome: item.nome,
+            descricao: item.descricao || "",
+            preco: item.preco,
+            categoria: item.categoria,
+            icone: getEmojiForCategoria(item.categoria),
+          })),
+        );
+      } catch (error) {
+        Alert.alert(
+          "Erro",
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar o cardápio.",
+        );
+      } finally {
+        setCarregandoCardapio(false);
+      }
+    };
+
+    carregarCardapio();
+  }, [visible, restauranteId, token]);
+
+  const getEmojiForCategoria = (categoria?: string) => {
+    switch (categoria) {
+      case "BEBIDAS":
+        return "🥤";
+      case "SOBREMESAS":
+        return "🍰";
+      case "PRATOS":
+        return "🍽️";
+      default:
+        return "🍽️";
+    }
+  };
+
+  const adicionarItem = (cardapioItem: ItemCardapio) => {
     const itemExistente = itens.find((item) => item.itemId === cardapioItem.id);
 
     if (itemExistente) {
@@ -101,7 +160,11 @@ export default function PedidosModal({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.select({ ios: "padding", android: "height" })}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
+      >
         <View style={styles.header}>
           <Text style={styles.titulo}>Pedidos - Mesa {mesaId}</Text>
           <TouchableOpacity onPress={onClose}>
@@ -109,24 +172,32 @@ export default function PedidosModal({
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
           {/* Cardápio */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Cardápio</Text>
             <View style={styles.cardapioContainer}>
-              {CARDAPIO.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.cardapioItem}
-                  onPress={() => adicionarItem(item)}
-                >
-                  <Text style={styles.icone}>{item.icone}</Text>
-                  <Text style={styles.itemNome}>{item.nome}</Text>
-                  <Text style={styles.itemPreco}>
-                    R$ {item.preco.toFixed(2)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {carregandoCardapio ? (
+                <Text style={styles.emptyText}>Carregando cardápio...</Text>
+              ) : cardapio.length === 0 ? (
+                <Text style={styles.emptyText}>
+                  Nenhum item disponível no cardápio.
+                </Text>
+              ) : (
+                cardapio.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.cardapioItem}
+                    onPress={() => adicionarItem(item)}
+                  >
+                    <Text style={styles.icone}>{item.icone}</Text>
+                    <Text style={styles.itemNome}>{item.nome}</Text>
+                    <Text style={styles.itemPreco}>
+                      R$ {item.preco.toFixed(2)}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           </View>
 
@@ -216,7 +287,7 @@ export default function PedidosModal({
             <Text style={styles.btnEnviarText}>Enviar</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

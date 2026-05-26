@@ -5,6 +5,7 @@ import PedidosModal from "@/components/PedidosModal";
 import { Pedido } from "@/data/cardapio";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MesasPage() {
   const mesas = ["01", "02", "03", "04", "05", "06"];
@@ -76,56 +77,62 @@ export default function MesasPage() {
   };
 
   return (
-    <View style={styles.container}>
-      <Notificacao />
-      <View style={styles.headerContainer}>
-        <Text style={styles.pageTitle}>Mesas</Text>
-        <Text style={styles.pageSubtitle}>
-          Selecione uma mesa para gerenciar pedidos ou verificar detalhes.
-        </Text>
-      </View>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.gridContainer}>
-          {mesas.map((mesa) => (
-            <CardMesa
-              key={mesa}
-              mesaId={mesa}
-              pedido={pedidos[mesa]}
-              onAdicionarPedido={handleAdicionarPedido}
-              onVerDetalhes={handleVerDetalhes}
-            />
-          ))}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Notificacao />
+        <View style={styles.headerContainer}>
+          <Text style={styles.pageTitle}>Mesas</Text>
+          <Text style={styles.pageSubtitle}>
+            Selecione uma mesa para gerenciar pedidos ou verificar detalhes.
+          </Text>
         </View>
-      </ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.gridContainer}>
+            {mesas.map((mesa) => (
+              <CardMesa
+                key={mesa}
+                mesaId={mesa}
+                pedido={pedidos[mesa]}
+                onAdicionarPedido={handleAdicionarPedido}
+                onVerDetalhes={handleVerDetalhes}
+              />
+            ))}
+          </View>
+        </ScrollView>
 
-      {mesaSelecionada && (
-        <>
-          <PedidosModal
-            visible={modalPedidosAberto}
-            mesaId={mesaSelecionada}
-            pedido={pedidos[mesaSelecionada]}
-            onClose={() => setModalPedidosAberto(false)}
-            onSavePedido={handleSavePedido}
-          />
-          <DetalhesModal
-            visible={modalDetalhesAberto}
-            mesaId={mesaSelecionada}
-            itens={pedidos[mesaSelecionada]?.itens || []}
-            observacoes={pedidos[mesaSelecionada]?.observacoes || ""}
-            onClose={() => setModalDetalhesAberto(false)}
-            onAtualizarItem={handleAtualizarItem}
-            onRemoverItem={handleRemoverItem}
-          />
-        </>
-      )}
-    </View>
+        {mesaSelecionada && (
+          <>
+            <PedidosModal
+              visible={modalPedidosAberto}
+              mesaId={mesaSelecionada}
+              pedido={pedidos[mesaSelecionada]}
+              onClose={() => setModalPedidosAberto(false)}
+              onSavePedido={handleSavePedido}
+            />
+            <DetalhesModal
+              visible={modalDetalhesAberto}
+              mesaId={mesaSelecionada}
+              itens={pedidos[mesaSelecionada]?.itens || []}
+              observacoes={pedidos[mesaSelecionada]?.observacoes || ""}
+              onClose={() => setModalDetalhesAberto(false)}
+              onAtualizarItem={handleAtualizarItem}
+              onRemoverItem={handleRemoverItem}
+            />
+          </>
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#e6eefc",
+  },
   container: {
     flex: 1,
     backgroundColor: "#e6eefc",
