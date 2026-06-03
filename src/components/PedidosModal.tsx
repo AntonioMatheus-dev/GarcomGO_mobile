@@ -1,10 +1,7 @@
-import { useAuth } from "@/context/AuthContext";
 import { ItemCardapio, ItemPedido, Pedido } from "@/data/cardapio";
-import { listarItensPorRestaurante } from "@/services/api";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -20,78 +17,64 @@ interface PedidosModalProps {
   visible: boolean;
   mesaId: string;
   pedido?: Pedido;
+  cardapio: ItemCardapio[];
+  carregandoCardapio?: boolean;
+  salvando?: boolean;
   onClose: () => void;
-  onSavePedido: (mesaId: string, pedido: Pedido) => void;
+  onSavePedido: (mesaId: string, pedido: Pedido) => void | Promise<void>;
 }
 
 export default function PedidosModal({
   visible,
   mesaId,
   pedido,
+  cardapio,
+  carregandoCardapio = false,
+  salvando = false,
   onClose,
   onSavePedido,
 }: PedidosModalProps) {
-  const { token, restauranteId } = useAuth();
   const [itens, setItens] = useState<ItemPedido[]>([]);
   const [observacoes, setObservacoes] = useState("");
-  const [cardapio, setCardapio] = useState<ItemCardapio[]>([]);
-  const [carregandoCardapio, setCarregandoCardapio] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState("TODOS");
 
   useEffect(() => {
     setItens(pedido?.itens ? [...pedido.itens] : []);
     setObservacoes(pedido?.observacoes || "");
   }, [pedido, visible]);
 
-  useEffect(() => {
-    if (!visible || !restauranteId || !token) {
-      setCardapio([]);
-      return;
-    }
+  const categorias = useMemo(
+    () => [
+      "TODOS",
+      ...Array.from(
+        new Set(
+          cardapio
+            .map((item) => item.categoria)
+            .filter((categoria): categoria is string => Boolean(categoria)),
+        ),
+      ),
+    ],
+    [cardapio],
+  );
 
-    const carregarCardapio = async () => {
-      setCarregandoCardapio(true);
-      try {
-        const itensDoBack = await listarItensPorRestaurante(
-          restauranteId,
-          token,
-        );
-        setCardapio(
-          itensDoBack.map((item) => ({
-            id: item.id,
-            nome: item.nome,
-            descricao: item.descricao || "",
-            preco: item.preco,
-            categoria: item.categoria,
-            icone: getEmojiForCategoria(item.categoria),
-          })),
-        );
-      } catch (error) {
-        Alert.alert(
-          "Erro",
-          error instanceof Error
-            ? error.message
-            : "Não foi possível carregar o cardápio.",
-        );
-      } finally {
-        setCarregandoCardapio(false);
-      }
-    };
+  const itensPopulares = useMemo(() => cardapio.slice(0, 4), [cardapio]);
 
-    carregarCardapio();
-  }, [visible, restauranteId, token]);
+  const cardapioFiltrado = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
 
-  const getEmojiForCategoria = (categoria?: string) => {
-    switch (categoria) {
-      case "BEBIDAS":
-        return "🥤";
-      case "SOBREMESAS":
-        return "🍰";
-      case "PRATOS":
-        return "🍽️";
-      default:
-        return "🍽️";
-    }
-  };
+    return cardapio.filter((item) => {
+      const correspondeCategoria =
+        categoriaSelecionada === "TODOS" ||
+        item.categoria === categoriaSelecionada;
+      const correspondeBusca =
+        !termo ||
+        item.nome.toLowerCase().includes(termo) ||
+        item.descricao?.toLowerCase().includes(termo);
+
+      return correspondeCategoria && correspondeBusca;
+    });
+  }, [busca, cardapio, categoriaSelecionada]);
 
   const adicionarItem = (cardapioItem: ItemCardapio) => {
     const itemExistente = itens.find((item) => item.itemId === cardapioItem.id);
@@ -111,7 +94,7 @@ export default function PedidosModal({
           id: Date.now().toString(),
           itemId: cardapioItem.id,
           nome: cardapioItem.nome,
-          icone: cardapioItem.icone,
+          icone: cardapioItem.icone ?? "🍽️",
           quantidade: 1,
           preco: cardapioItem.preco,
         },
@@ -135,6 +118,14 @@ export default function PedidosModal({
     );
   };
 
+  const atualizarObservacaoItem = (itemId: string, texto: string) => {
+    setItens(
+      itens.map((item) =>
+        item.id === itemId ? { ...item, observacoes: texto } : item,
+      ),
+    );
+  };
+
   const calcularTotal = () => {
     return itens.reduce(
       (total, item) => total + item.preco * item.quantidade,
@@ -142,10 +133,10 @@ export default function PedidosModal({
     );
   };
 
-  const handleFinalizarPedido = () => {
+  const handleFinalizarPedido = async () => {
     const novoStatus =
       pedido?.status === "finalizado" ? "aberto" : "finalizado";
-    onSavePedido(mesaId, {
+    await onSavePedido(mesaId, {
       mesaId,
       itens,
       status: novoStatus,
@@ -173,9 +164,65 @@ export default function PedidosModal({
         </View>
 
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-          {/* Cardápio */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Cardápio</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar item"
+              placeholderTextColor="#8a97b8"
+              value={busca}
+              onChangeText={setBusca}
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriasRow}
+            >
+              {categorias.map((categoria) => (
+                <TouchableOpacity
+                  key={categoria}
+                  style={[
+                    styles.categoriaChip,
+                    categoriaSelecionada === categoria &&
+                      styles.categoriaChipActive,
+                  ]}
+                  onPress={() => setCategoriaSelecionada(categoria)}
+                >
+                  <Text
+                    style={[
+                      styles.categoriaText,
+                      categoriaSelecionada === categoria &&
+                        styles.categoriaTextActive,
+                    ]}
+                  >
+                    {categoria === "TODOS" ? "Todos" : categoria}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            {itensPopulares.length > 0 &&
+            !busca &&
+            categoriaSelecionada === "TODOS" ? (
+              <View style={styles.popularSection}>
+                <Text style={styles.subSectionTitle}>Mais pedidos</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.popularRow}
+                >
+                  {itensPopulares.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.popularItem}
+                      onPress={() => adicionarItem(item)}
+                    >
+                      <Text style={styles.popularIcon}>{item.icone}</Text>
+                      <Text style={styles.popularName}>{item.nome}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
             <View style={styles.cardapioContainer}>
               {carregandoCardapio ? (
                 <Text style={styles.emptyText}>Carregando cardápio...</Text>
@@ -183,8 +230,10 @@ export default function PedidosModal({
                 <Text style={styles.emptyText}>
                   Nenhum item disponível no cardápio.
                 </Text>
+              ) : cardapioFiltrado.length === 0 ? (
+                <Text style={styles.emptyText}>Nenhum item encontrado.</Text>
               ) : (
-                cardapio.map((item) => (
+                cardapioFiltrado.map((item) => (
                   <TouchableOpacity
                     key={item.id}
                     style={styles.cardapioItem}
@@ -201,7 +250,6 @@ export default function PedidosModal({
             </View>
           </View>
 
-          {/* Pedido */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Itens do Pedido</Text>
             {itens.length === 0 ? (
@@ -252,13 +300,21 @@ export default function PedidosModal({
                         <Ionicons name="trash" size={24} color="#ff4444" />
                       </TouchableOpacity>
                     </View>
+                    <TextInput
+                      style={styles.itemObservacaoInput}
+                      placeholder="Observação do item"
+                      placeholderTextColor="#8a97b8"
+                      value={item.observacoes || ""}
+                      onChangeText={(texto) =>
+                        atualizarObservacaoItem(item.id, texto)
+                      }
+                    />
                   </View>
                 ))}
               </View>
             )}
           </View>
 
-          {/* Observações */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Observações</Text>
             <TextInput
@@ -281,10 +337,13 @@ export default function PedidosModal({
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.btnEnviar}
+            style={[styles.btnEnviar, salvando && styles.btnEnviarDisabled]}
             onPress={handleFinalizarPedido}
+            disabled={salvando}
           >
-            <Text style={styles.btnEnviarText}>Enviar</Text>
+            <Text style={styles.btnEnviarText}>
+              {salvando ? "Enviando..." : "Enviar"}
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -331,6 +390,76 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#337acc",
     marginBottom: 12,
+  },
+  subSectionTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#153e7d",
+    marginBottom: 8,
+  },
+  searchInput: {
+    height: 44,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: "#dce5ff",
+    color: "#153e7d",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  categoriasRow: {
+    gap: 8,
+    paddingBottom: 12,
+  },
+  categoriaChip: {
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    backgroundColor: "#ffffff",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#dce5ff",
+  },
+  categoriaChipActive: {
+    backgroundColor: "#337acc",
+    borderColor: "#337acc",
+  },
+  categoriaText: {
+    color: "#4a6fae",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  categoriaTextActive: {
+    color: "#ffffff",
+  },
+  popularSection: {
+    marginBottom: 12,
+  },
+  popularRow: {
+    gap: 8,
+    paddingRight: 12,
+  },
+  popularItem: {
+    width: 112,
+    minHeight: 88,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#dce5ff",
+    borderRadius: 14,
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  popularIcon: {
+    fontSize: 24,
+    marginBottom: 6,
+  },
+  popularName: {
+    color: "#153e7d",
+    fontSize: 12,
+    fontWeight: "800",
+    textAlign: "center",
   },
   cardapioContainer: {
     flexDirection: "row",
@@ -425,6 +554,17 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 8,
   },
+  itemObservacaoInput: {
+    minHeight: 42,
+    backgroundColor: "#f7f9ff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0e7f5",
+    paddingHorizontal: 12,
+    color: "#153e7d",
+    fontSize: 13,
+    marginTop: 10,
+  },
   quantidade: {
     fontSize: 14,
     fontWeight: "700",
@@ -472,6 +612,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
+  },
+  btnEnviarDisabled: {
+    opacity: 0.7,
   },
   btnEnviarText: {
     color: "#ffffff",

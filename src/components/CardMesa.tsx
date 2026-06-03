@@ -5,6 +5,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface CardMesaProps {
   mesaId: string;
+  mesaLabel?: string;
+  mesaStatus?: string;
   pedido?: Pedido;
   onAdicionarPedido: (mesaId: string) => void;
   onVerDetalhes: (mesaId: string) => void;
@@ -12,51 +14,108 @@ interface CardMesaProps {
 
 export default function CardMesa({
   mesaId,
+  mesaLabel,
+  mesaStatus,
   pedido,
   onAdicionarPedido,
   onVerDetalhes,
 }: CardMesaProps) {
   const temPedido = pedido && pedido.itens.length > 0;
   const statusFinalizado = pedido?.status === "finalizado" && temPedido;
+  const statusAberto = pedido?.status === "aberto" && temPedido;
+  const quantidadeItens =
+    pedido?.itens.reduce((total, item) => total + item.quantidade, 0) || 0;
+  const total =
+    pedido?.itens.reduce(
+      (valor, item) => valor + item.preco * item.quantidade,
+      0,
+    ) || 0;
+  const statusMesa = mesaStatus?.toLowerCase();
+  const estaLivre =
+    !temPedido && (!statusMesa || statusMesa === "livre" || statusMesa === "disponivel");
+  const cardState = statusFinalizado
+    ? "enviado"
+    : statusAberto
+      ? "aberto"
+      : estaLivre
+        ? "livre"
+        : "ocupada";
+  const stateConfig = {
+    livre: {
+      label: "Livre",
+      icon: "checkmark-circle" as const,
+      color: "#1f9d55",
+      badgeStyle: styles.statusFree,
+      button: "Abrir mesa",
+      buttonStyle: styles.btnAdicionar,
+    },
+    ocupada: {
+      label: "Ocupada",
+      icon: "restaurant" as const,
+      color: "#f59f00",
+      badgeStyle: styles.statusBusy,
+      button: "Adicionar item",
+      buttonStyle: styles.btnAdicionar,
+    },
+    aberto: {
+      label: "Pedido aberto",
+      icon: "time" as const,
+      color: "#f59f00",
+      badgeStyle: styles.statusBusy,
+      button: "Adicionar item",
+      buttonStyle: styles.btnAdicionar,
+    },
+    enviado: {
+      label: "Pedido enviado",
+      icon: "paper-plane" as const,
+      color: "#337acc",
+      badgeStyle: styles.statusSent,
+      button: "Ver pedido",
+      buttonStyle: styles.btnDetalhes,
+    },
+  }[cardState];
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.mesaId}>Mesa {mesaId}</Text>
+        <Text style={styles.mesaId}>Mesa {mesaLabel || mesaId}</Text>
         <View
           style={[
             styles.statusBadge,
-            statusFinalizado ? styles.statusGreen : styles.statusRed,
+            stateConfig.badgeStyle,
           ]}
         >
           <Text style={styles.statusText}>
-            {statusFinalizado ? "Finalizado" : "Aberto"}
+            {stateConfig.label}
           </Text>
         </View>
       </View>
 
       <View style={styles.cardInfo}>
         <Ionicons
-          name={statusFinalizado ? "checkmark-circle" : "time"}
+          name={stateConfig.icon}
           size={36}
-          color={statusFinalizado ? "#44bb66" : "#ff6b6b"}
+          color={stateConfig.color}
         />
         <Text style={styles.infoText}>
-          {temPedido ? `${pedido.itens.length} itens` : "Nenhum pedido"}
+          {temPedido ? `${quantidadeItens} itens` : "Nenhum pedido"}
         </Text>
+        {temPedido && (
+          <Text style={styles.totalText}>R$ {total.toFixed(2)}</Text>
+        )}
       </View>
 
       <TouchableOpacity
         style={[
           styles.button,
-          statusFinalizado ? styles.btnDetalhes : styles.btnAdicionar,
+          stateConfig.buttonStyle,
         ]}
         onPress={() =>
           statusFinalizado ? onVerDetalhes(mesaId) : onAdicionarPedido(mesaId)
         }
       >
         <Text style={styles.buttonText}>
-          {statusFinalizado ? "Ver Detalhes" : "Adicionar Pedido"}
+          {stateConfig.button}
         </Text>
       </TouchableOpacity>
     </View>
@@ -113,19 +172,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  statusRed: {
+  statusBusy: {
     backgroundColor: "#ffe6ea",
     borderColor: "#ff8a96",
   },
-  statusGreen: {
+  statusFree: {
     backgroundColor: "#e8f9ea",
     borderColor: "#74d186",
+  },
+  statusSent: {
+    backgroundColor: "#e8f1ff",
+    borderColor: "#8cb7f4",
   },
   infoText: {
     fontSize: 14,
     color: "#4a6fae",
     fontWeight: "600",
     textAlign: "center",
+  },
+  totalText: {
+    fontSize: 15,
+    color: "#153e7d",
+    fontWeight: "900",
   },
   button: {
     width: "100%",

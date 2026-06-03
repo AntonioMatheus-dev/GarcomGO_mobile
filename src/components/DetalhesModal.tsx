@@ -1,6 +1,6 @@
 import { ItemPedido } from "@/data/cardapio";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React from "react";
 import {
     Alert,
     Modal,
@@ -17,6 +17,7 @@ interface DetalhesModalProps {
   itens: ItemPedido[];
   observacoes?: string;
   onClose: () => void;
+  onAdicionarItens: () => void;
   onAtualizarItem: (itemId: string, novaQuantidade: number) => void;
   onRemoverItem: (itemId: string) => void;
 }
@@ -27,17 +28,20 @@ export default function DetalhesModal({
   itens,
   observacoes,
   onClose,
+  onAdicionarItens,
   onAtualizarItem,
   onRemoverItem,
 }: DetalhesModalProps) {
-  const [editandoItemId, setEditandoItemId] = useState<string | null>(null);
-
   const calcularTotal = () => {
     return itens.reduce(
       (total, item) => total + item.preco * item.quantidade,
       0,
     );
   };
+  const quantidadeItens = itens.reduce(
+    (total, item) => total + item.quantidade,
+    0,
+  );
 
   const handleExcluir = (itemId: string, itemNome: string) => {
     Alert.alert("Excluir item", `Tem certeza que deseja excluir ${itemNome}?`, [
@@ -69,6 +73,18 @@ export default function DetalhesModal({
         </View>
 
         <ScrollView style={styles.content}>
+          <View style={styles.summaryCard}>
+            <View>
+              <Text style={styles.summaryLabel}>Itens</Text>
+              <Text style={styles.summaryValue}>{quantidadeItens}</Text>
+            </View>
+            <View>
+              <Text style={styles.summaryLabel}>Total</Text>
+              <Text style={styles.summaryValue}>
+                R$ {calcularTotal().toFixed(2)}
+              </Text>
+            </View>
+          </View>
           {itens.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>Nenhum item neste pedido</Text>
@@ -162,6 +178,12 @@ export default function DetalhesModal({
                 R$ {calcularTotal().toFixed(2)}
               </Text>
             </View>
+            <TouchableOpacity
+              style={styles.btnAdicionarItens}
+              onPress={onAdicionarItens}
+            >
+              <Text style={styles.btnAdicionarItensText}>Adicionar itens</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -199,6 +221,27 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  summaryCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#dce5ff",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  summaryLabel: {
+    color: "#66758a",
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  summaryValue: {
+    color: "#153e7d",
+    fontSize: 18,
+    fontWeight: "900",
   },
   emptyContainer: {
     flex: 1,
@@ -331,6 +374,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 12,
   },
   totalLabel: {
     fontSize: 14,
@@ -341,5 +385,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     color: "#153e7d",
+  },
+  btnAdicionarItens: {
+    backgroundColor: "#337acc",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  btnAdicionarItensText: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "800",
   },
 });

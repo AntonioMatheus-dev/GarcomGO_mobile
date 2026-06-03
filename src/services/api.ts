@@ -2,10 +2,10 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 
 const getHost = () => {
-  const debuggerHost =
-    typeof Constants.manifest?.debuggerHost === "string"
-      ? Constants.manifest.debuggerHost.split(":")[0]
-      : "localhost";
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    Constants.linkingUri?.replace(/^exp:\/\//, "");
+  const debuggerHost = hostUri?.split(":")[0] || "localhost";
 
   if (Platform.OS === "android") {
     if (debuggerHost && debuggerHost !== "localhost") {
@@ -32,7 +32,12 @@ async function apiFetch<T>(path: string, options: RequestInit = {}) {
     throw new Error(errorText || `Erro ao acessar ${path}`);
   }
 
-  return (await response.json()) as T;
+  const responseText = await response.text();
+  if (!responseText) {
+    return undefined as unknown as T;
+  }
+
+  return JSON.parse(responseText) as T;
 }
 
 export interface LoginResponse {
@@ -45,6 +50,7 @@ export interface LoginResponse {
   };
 }
 
+// AUTENTICAÇÃO POR MATRÍCULA/SENHA - comentada para permitir entrar sem credenciais
 export async function login(email: string, password: string) {
   return apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
@@ -54,9 +60,45 @@ export async function login(email: string, password: string) {
 }
 
 export async function listarRestaurantes() {
-  return apiFetch<Array<{ id: string; nome: string }>>("/restaurantes", {
+  return apiFetch<{ id: string; nome: string }[]>("/restaurantes", {
     method: "GET",
     headers: buildHeaders(),
+  });
+}
+
+export interface MesaResponse {
+  id: string;
+  numero: number;
+  capacidade: number;
+  status: string;
+  restauranteId: string;
+}
+
+export async function listarMesasPorRestaurante(
+  restauranteId: string,
+  token: string,
+) {
+  return apiFetch<MesaResponse[]>(`/mesas/restaurante/${restauranteId}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+}
+
+export interface GarcomResponse {
+  id: string;
+  nome: string;
+  email: string;
+  restauranteId: string;
+  role: string;
+}
+
+export async function listarGarconsPorRestaurante(
+  restauranteId: string,
+  token: string,
+) {
+  return apiFetch<GarcomResponse[]>(`/garcom/restaurante/${restauranteId}`, {
+    method: "GET",
+    headers: buildHeaders(token),
   });
 }
 
@@ -98,6 +140,42 @@ export async function alterarStatusPedido(
   });
 }
 
+export interface PedidoResponse {
+  id: string;
+  status: string;
+  valorTotal: number;
+  mesaId?: string;
+  mesa_id?: string;
+  garcomId?: string;
+  garcom_id?: string;
+  createdAt: string;
+  itens?: {
+    id: string;
+    itemId?: string;
+    item_id?: string;
+    item?: {
+      id: string;
+      nome?: string;
+      categoria?: string;
+      preco?: number;
+    };
+    nome: string;
+    categoria?: string;
+    quantidade: number;
+    preco: number;
+  }[];
+}
+
+export async function listarPedidosPorRestaurante(
+  restauranteId: string,
+  token: string,
+) {
+  return apiFetch<PedidoResponse[]>(`/pedidos/restaurante/${restauranteId}`, {
+    method: "GET",
+    headers: buildHeaders(token),
+  });
+}
+
 export interface ItemResponse {
   id: string;
   nome: string;
@@ -121,12 +199,11 @@ export async function adicionarItemPedido(
   pedidoId: string,
   itemId: string,
   quantidade: number,
-  precoUnitario: number,
   token: string,
 ) {
   return apiFetch<void>("/pedidos/item", {
     method: "POST",
     headers: buildHeaders(token),
-    body: JSON.stringify({ pedidoId, itemId, quantidade, precoUnitario }),
+    body: JSON.stringify({ pedidoId, itemId, quantidade }),
   });
 }

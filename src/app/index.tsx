@@ -21,16 +21,25 @@ export default function IndexPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Login", "Informe email e senha para conectar na API.");
+      return;
+    }
+
     try {
-      await login(email.trim(), password);
+      setLoading(true);
+      await login(email, password);
       router.push("/mesas");
     } catch (error) {
       Alert.alert(
         "Falha no login",
-        error instanceof Error ? error.message : "Não foi possível acessar.",
+        error instanceof Error ? error.message : "Nao foi possivel entrar.",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,16 +62,18 @@ export default function IndexPage() {
                 style={styles.Illustration}
               />
               <Text style={styles.title}>
-                Bem-vindo ao <Text style={styles.marca}>Garçom GO</Text>
+                Bem-vindo ao <Text style={styles.marca}>Garcom GO</Text>
               </Text>
               <Text style={styles.subtitle}>
                 Agilize o atendimento e visualize pedidos em tempo real.
               </Text>
               <View style={styles.form}>
                 <Input
-                  placeholder="Matrícula"
+                  placeholder="Email"
                   value={email}
                   onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
                 />
                 <Input
                   placeholder="Senha"
@@ -70,7 +81,11 @@ export default function IndexPage() {
                   value={password}
                   onChangeText={setPassword}
                 />
-                <Button label="Entrar" onPress={handleLogin} />
+                <Button
+                  label={loading ? "Entrando..." : "Entrar"}
+                  onPress={handleLogin}
+                  disabled={loading}
+                />
               </View>
             </View>
           </View>
