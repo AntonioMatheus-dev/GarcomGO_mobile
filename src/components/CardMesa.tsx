@@ -32,7 +32,8 @@ export default function CardMesa({
     ) || 0;
   const statusMesa = mesaStatus?.toLowerCase();
   const estaLivre =
-    !temPedido && (!statusMesa || statusMesa === "livre" || statusMesa === "disponivel");
+    !temPedido &&
+    (!statusMesa || statusMesa === "livre" || statusMesa === "disponivel");
   const cardState = statusFinalizado
     ? "enviado"
     : statusAberto
@@ -92,11 +93,7 @@ export default function CardMesa({
       </View>
 
       <View style={styles.cardInfo}>
-        <Ionicons
-          name={stateConfig.icon}
-          size={36}
-          color={stateConfig.color}
-        />
+        <Ionicons name={stateConfig.icon} size={68} color={stateConfig.color} />
         <Text style={styles.infoText}>
           {temPedido ? `${quantidadeItens} itens` : "Nenhum pedido"}
         </Text>
@@ -125,20 +122,19 @@ export default function CardMesa({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 14,
-    flexBasis: "48%",
-    minWidth: 160,
+    borderRadius: 18,
+    padding: 24,
+    width: "100%",
     borderWidth: 2,
     borderColor: "#dce5ff",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
-    minHeight: 200,
+    marginBottom: 16,
+    minHeight: 310,
   },
   mesaId: {
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 32,
+    fontWeight: "900",
     color: "#153e7d",
   },
   cardHeader: {
@@ -146,24 +142,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    marginBottom: 24,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "rgba(51, 122, 204, 0.2)",
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 18,
     color: "#153e7d",
-    fontWeight: "700",
+    fontWeight: "900",
   },
   cardInfo: {
     alignItems: "center",
-    gap: 10,
-    marginBottom: 18,
+    gap: 16,
+    marginBottom: 28,
   },
   statusCircle: {
     width: 50,
@@ -185,20 +181,21 @@ const styles = StyleSheet.create({
     borderColor: "#8cb7f4",
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 22,
     color: "#4a6fae",
-    fontWeight: "600",
+    fontWeight: "800",
     textAlign: "center",
   },
   totalText: {
-    fontSize: 15,
+    fontSize: 28,
     color: "#153e7d",
     fontWeight: "900",
   },
   button: {
     width: "100%",
-    paddingVertical: 14,
-    borderRadius: 14,
+    minHeight: 72,
+    paddingVertical: 20,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -209,8 +206,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#44bb66",
   },
   buttonText: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "900",
     color: "#ffffff",
   },
 });
