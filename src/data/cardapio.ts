@@ -26,8 +26,9 @@ export interface ItemPedido {
 }
 
 export interface Pedido {
+  id?: string;
   mesaId: string;
   itens: ItemPedido[];
-  status: "aberto" | "finalizado";
+  status: "aberto" | "finalizado" | "entregue" | "preparando";
   observacoes?: string;
 }

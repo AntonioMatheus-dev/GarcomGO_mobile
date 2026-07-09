@@ -1,7 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "@/context/AuthContext";
 
-export default function Notificacao() {
+interface NotificacaoProps {
+  onNotificacaoPress?: () => void;
+}
+
+export default function Notificacao({ onNotificacaoPress }: NotificacaoProps) {
+  const { user, pedidosPronto } = useAuth();
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -11,18 +18,28 @@ export default function Notificacao() {
             style={styles.Ilustration}
           />
           <View>
-            <Text style={styles.greeting}>Olá, Garçom!</Text>
+            <Text style={styles.greeting}>Olá, {user?.nome || "Garçom"}!</Text>
             <Text style={styles.subtitle}>
               Acompanhe os pedidos em tempo real
             </Text>
           </View>
         </View>
-        <View style={styles.bellContainer}>
-          <Ionicons name="notifications" size={32} color="#337acc" />
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>3</Text>
-          </View>
-        </View>
+        <TouchableOpacity
+          style={styles.bellContainer}
+          onPress={onNotificacaoPress}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={pedidosPronto > 0 ? "notifications" : "notifications-outline"}
+            size={32}
+            color={pedidosPronto > 0 ? "#ef4444" : "#337acc"}
+          />
+          {pedidosPronto > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{pedidosPronto}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -10,6 +10,7 @@ interface CardMesaProps {
   pedido?: Pedido;
   onAdicionarPedido: (mesaId: string) => void;
   onVerDetalhes: (mesaId: string) => void;
+  onMarcarEntregue?: (mesaId: string) => void;
 }
 
 export default function CardMesa({
@@ -19,10 +20,13 @@ export default function CardMesa({
   pedido,
   onAdicionarPedido,
   onVerDetalhes,
+  onMarcarEntregue,
 }: CardMesaProps) {
-  const temPedido = pedido && pedido.itens.length > 0;
+  const temPedido = !!pedido;
   const statusFinalizado = pedido?.status === "finalizado" && temPedido;
-  const statusAberto = pedido?.status === "aberto" && temPedido;
+  const statusEntregue = pedido?.status === "entregue" && temPedido;
+  const statusPreparando = pedido?.status === "preparando" && temPedido;
+  const statusAberto = (pedido?.status === "aberto" || (!statusFinalizado && !statusEntregue && !statusPreparando)) && temPedido;
   const quantidadeItens =
     pedido?.itens.reduce((total, item) => total + item.quantidade, 0) || 0;
   const total =
@@ -36,11 +40,15 @@ export default function CardMesa({
     (!statusMesa || statusMesa === "livre" || statusMesa === "disponivel");
   const cardState = statusFinalizado
     ? "enviado"
-    : statusAberto
-      ? "aberto"
-      : estaLivre
-        ? "livre"
-        : "ocupada";
+    : statusEntregue
+      ? "entregue"
+      : statusPreparando
+        ? "preparando"
+        : statusAberto
+          ? "aberto"
+          : estaLivre
+            ? "livre"
+            : "ocupada";
   const stateConfig = {
     livre: {
       label: "Livre",
@@ -65,6 +73,22 @@ export default function CardMesa({
       badgeStyle: styles.statusBusy,
       button: "Adicionar item",
       buttonStyle: styles.btnAdicionar,
+    },
+    preparando: {
+      label: "Em preparo",
+      icon: "flame" as const,
+      color: "#f59f00",
+      badgeStyle: styles.statusBusy,
+      button: "Ver pedido",
+      buttonStyle: styles.btnDetalhes,
+    },
+    entregue: {
+      label: "Pronto para servir!",
+      icon: "checkmark-done" as const,
+      color: "#16a34a",
+      badgeStyle: styles.statusFree,
+      button: "Fim da Refeição",
+      buttonStyle: styles.btnDetalhes,
     },
     enviado: {
       label: "Pedido enviado",
@@ -107,9 +131,15 @@ export default function CardMesa({
           styles.button,
           stateConfig.buttonStyle,
         ]}
-        onPress={() =>
-          statusFinalizado ? onVerDetalhes(mesaId) : onAdicionarPedido(mesaId)
-        }
+        onPress={() => {
+          if (statusEntregue) {
+            onMarcarEntregue?.(mesaId);
+          } else if (statusFinalizado || statusPreparando) {
+            onVerDetalhes(mesaId);
+          } else {
+            onAdicionarPedido(mesaId);
+          }
+        }}
       >
         <Text style={styles.buttonText}>
           {stateConfig.button}

@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-const getHost = () => {
+export const getHost = () => {
   const hostUri =
     Constants.expoConfig?.hostUri ||
     Constants.linkingUri?.replace(/^exp:\/\//, "");
@@ -50,13 +50,20 @@ export interface LoginResponse {
   };
 }
 
-// AUTENTICAÇÃO POR MATRÍCULA/SENHA - comentada para permitir entrar sem credenciais
 export async function login(email: string, password: string) {
   return apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
     headers: buildHeaders(),
     body: JSON.stringify({ email, password }),
   });
+}
+
+export interface GarcomLoginResponse {
+  id: string;
+  nome: string;
+  email: string;
+  restauranteId: string;
+  role: string;
 }
 
 export async function listarRestaurantes() {
