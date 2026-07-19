@@ -113,6 +113,7 @@ export async function criarPedido(
   mesaId: string,
   garcomId: string,
   token: string,
+  observacao?: string,
 ) {
   return apiFetch<{
     id: string;
@@ -124,7 +125,7 @@ export async function criarPedido(
   }>("/pedidos", {
     method: "POST",
     headers: buildHeaders(token),
-    body: JSON.stringify({ mesaId, garcomId }),
+    body: JSON.stringify({ mesaId, garcomId, observacao }),
   });
 }
 
@@ -156,6 +157,7 @@ export interface PedidoResponse {
   garcomId?: string;
   garcom_id?: string;
   createdAt: string;
+  observacao?: string;
   itens?: {
     id: string;
     itemId?: string;
@@ -170,6 +172,7 @@ export interface PedidoResponse {
     categoria?: string;
     quantidade: number;
     preco: number;
+    observacao?: string;
   }[];
 }
 
@@ -207,10 +210,11 @@ export async function adicionarItemPedido(
   itemId: string,
   quantidade: number,
   token: string,
+  observacao?: string,
 ) {
   return apiFetch<void>("/pedidos/item", {
     method: "POST",
     headers: buildHeaders(token),
-    body: JSON.stringify({ pedidoId, itemId, quantidade }),
+    body: JSON.stringify({ pedidoId, itemId, quantidade, observacao }),
   });
 }

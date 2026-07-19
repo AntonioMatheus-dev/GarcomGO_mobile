@@ -146,6 +146,7 @@ export default function MesasPage() {
               icone: emojiPorCategoria(item.categoria || item.item?.categoria),
               quantidade: Number(item.quantidade),
               preco: Number(item.preco || item.item?.preco || 0),
+              observacoes: item.observacao || undefined,
             }))
             .filter((item) => item.quantidade > 0);
 
@@ -153,6 +154,7 @@ export default function MesasPage() {
             id: pedido.id,
             mesaId,
             status: normalizarStatus(pedido.status),
+            observacoes: pedido.observacao || undefined,
             itens,
           };
           return acc;
@@ -231,7 +233,7 @@ export default function MesasPage() {
 
     try {
       setSalvando(true);
-      const pedidoCriado = await api.criarPedido(mesaId, garcomId, token);
+      const pedidoCriado = await api.criarPedido(mesaId, garcomId, token, pedido.observacoes);
 
       await Promise.all(
         pedido.itens.map((item) =>
@@ -240,6 +242,7 @@ export default function MesasPage() {
             item.itemId,
             item.quantidade,
             token,
+            item.observacoes,
           ),
         ),
       );
@@ -332,7 +335,7 @@ export default function MesasPage() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={["top"]} style={styles.safeArea}>
       <View style={styles.container}>
         <Notificacao onNotificacaoPress={() => setFiltro("ocupadas")} />
         <View style={styles.headerContainer}>

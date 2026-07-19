@@ -1,22 +1,38 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+let NotificationsModule: any = null;
+
+async function carregarModulo() {
+  if (NotificationsModule) return NotificationsModule;
+  try {
+    NotificationsModule = await import('expo-notifications');
+  } catch {
+    console.warn('[Notificação] expo-notifications não disponível (Expo Go)');
+    return null;
+  }
+
+  NotificationsModule.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+
+  return NotificationsModule;
+}
 
 export async function solicitarPermissao() {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  const mod = await carregarModulo();
+  if (!mod) return false;
+
+  const { status: existingStatus } = await mod.getPermissionsAsync();
   let finalStatus = existingStatus;
 
   if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await mod.requestPermissionsAsync();
     finalStatus = status;
   }
 
@@ -26,9 +42,9 @@ export async function solicitarPermissao() {
   }
 
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
+    await mod.setNotificationChannelAsync('default', {
       name: 'Pedidos',
-      importance: Notifications.AndroidImportance.HIGH,
+      importance: mod.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#337acc',
     });
@@ -42,7 +58,10 @@ export async function dispararNotificacao(
   corpo: string,
   dados?: Record<string, string>,
 ) {
-  await Notifications.scheduleNotificationAsync({
+  const mod = await carregarModulo();
+  if (!mod) return;
+
+  await mod.scheduleNotificationAsync({
     content: {
       title: titulo,
       body: corpo,
@@ -53,11 +72,14 @@ export async function dispararNotificacao(
   });
 }
 
-export function ouvirRespostaNotificacao(
+export async function ouvirRespostaNotificacao(
   aoTocar: (dados: Record<string, string>) => void,
 ) {
-  const subscription = Notifications.addNotificationResponseReceivedListener(
-    (response) => {
+  const mod = await carregarModulo();
+  if (!mod) return null;
+
+  const subscription = mod.addNotificationResponseReceivedListener(
+    (response: any) => {
       const data = response.notification.request.content.data as Record<string, string>;
       aoTocar(data);
     },
