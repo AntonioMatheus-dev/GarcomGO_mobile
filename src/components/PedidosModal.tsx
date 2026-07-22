@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -148,31 +147,29 @@ export default function PedidosModal({
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={true}
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.select({ ios: "padding", android: "height" })}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
+        behavior="padding"
       >
-        <View style={styles.header}>
-          <Text style={styles.titulo}>Pedidos - Mesa {mesaId}</Text>
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color="#337acc" />
-          </TouchableOpacity>
-        </View>
+          <View style={styles.header}>
+            <Text style={styles.titulo}>Pedidos - Mesa {mesaId}</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="#337acc" />
+            </TouchableOpacity>
+          </View>
 
-        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Cardápio</Text>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar item"
-              placeholderTextColor="#8a97b8"
-              value={busca}
-              onChangeText={setBusca}
-            />
+          <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Cardápio</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar item"
+                placeholderTextColor="#8a97b8"
+                value={busca}
+                onChangeText={setBusca}
+              />
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -345,8 +342,8 @@ export default function PedidosModal({
               {salvando ? "Enviando..." : "Enviar"}
             </Text>
           </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          </View>
+        </KeyboardAvoidingView>
     </Modal>
   );
 }

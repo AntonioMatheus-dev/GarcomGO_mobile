@@ -41,7 +41,11 @@ const normalizarStatus = (status: string): Pedido["status"] => {
   return "aberto";
 };
 
-export default function MesasPage() {
+interface MesasPageProps {
+  filtroInicial?: FiltroMesa;
+}
+
+export default function MesasPage({ filtroInicial }: MesasPageProps) {
   const router = useRouter();
   const { token, restauranteId, user, limparNotificacoes } = useAuth();
   const [mesas, setMesas] = useState<api.MesaResponse[]>([]);
@@ -54,13 +58,13 @@ export default function MesasPage() {
   const [modalPedidosAberto, setModalPedidosAberto] = useState(false);
   const [modalDetalhesAberto, setModalDetalhesAberto] = useState(false);
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<FiltroMesa>("todas");
+  const [filtro, setFiltro] = useState<FiltroMesa>(filtroInicial || "todas");
   const [mensagemSucesso, setMensagemSucesso] = useState("");
   const params = useLocalSearchParams<{ filtro?: string }>();
 
   useEffect(() => {
-    if (params.filtro === "ocupadas") {
-      setFiltro("ocupadas");
+    if (params.filtro === "ocupadas" || params.filtro === "enviados") {
+      setFiltro(params.filtro);
     }
   }, [params.filtro]);
 
@@ -336,8 +340,8 @@ export default function MesasPage() {
 
   return (
     <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <Notificacao onNotificacaoPress={() => setFiltro("ocupadas")} />
       <View style={styles.container}>
-        <Notificacao onNotificacaoPress={() => setFiltro("ocupadas")} />
         <View style={styles.headerContainer}>
           <Text style={styles.pageTitle}>Mesas</Text>
           <Text style={styles.pageSubtitle}>
@@ -459,12 +463,11 @@ export default function MesasPage() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#e6eefc",
+    backgroundColor: "#ffffff",
   },
   container: {
     flex: 1,
     backgroundColor: "#e6eefc",
-    paddingTop: 18,
   },
   headerContainer: {
     paddingHorizontal: 18,

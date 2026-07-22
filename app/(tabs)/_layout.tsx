@@ -34,6 +34,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="enviados"
+        options={{
+          title: "Pedidos",
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? "document-text" : "document-text-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="perfil"
         options={{
           title: "Perfil",

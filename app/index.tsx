@@ -5,8 +5,8 @@ import {
   Alert,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -31,12 +31,22 @@ export default function IndexPage() {
   const [entrando, setEntrando] = useState(false);
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [garcons, setGarcons] = useState<GarcomResponse[]>([]);
+  const [tecladoVisivel, setTecladoVisivel] = useState(false);
 
   useEffect(() => {
     if (isLoggedIn && !loading) {
       router.replace("/mesas");
     }
   }, [isLoggedIn, loading, router]);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardDidShow", () => setTecladoVisivel(true));
+    const hide = Keyboard.addListener("keyboardDidHide", () => setTecladoVisivel(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -147,48 +157,49 @@ export default function IndexPage() {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
-        behavior={Platform.select({ ios: "padding", android: "height" })}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
+        behavior="padding"
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.container}>
-            <View style={styles.card}>
+          <View style={styles.spacer} />
+          <View style={styles.card}>
+            {!tecladoVisivel && (
               <Image
                 source={require("@/assets/logo.jpeg")}
                 style={styles.Illustration}
               />
-              <Text style={styles.title}>
-                Bem-vindo ao <Text style={styles.marca}>Garcom GO</Text>
-              </Text>
-              <Text style={styles.subtitle}>
-                Faça login como administrador para liberar o acesso dos garçons.
-              </Text>
-              <View style={styles.form}>
-                <Input
-                  placeholder="Email do administrador"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                />
-                <Input
-                  placeholder="Senha"
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <Button
-                  label={entrando ? "Entrando..." : "Entrar"}
-                  onPress={handleLogin}
-                  disabled={entrando}
-                />
-              </View>
+            )}
+            <Text style={styles.title}>
+              Bem-vindo ao <Text style={styles.marca}>Garcom GO</Text>
+            </Text>
+            <Text style={styles.subtitle}>
+              Faça login como administrador para liberar o acesso dos garçons.
+            </Text>
+            <View style={styles.form}>
+              <Input
+                placeholder="Email do administrador"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <Input
+                placeholder="Senha"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
+              <Button
+                label={entrando ? "Entrando..." : "Entrar"}
+                onPress={handleLogin}
+                disabled={entrando}
+              />
             </View>
           </View>
+          <View style={styles.spacer} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -205,11 +216,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingHorizontal: 24,
   },
-  container: {
+  spacer: {
     flex: 1,
-    padding: 24,
-    justifyContent: "center",
   },
   center: {
     flex: 1,
